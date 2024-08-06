@@ -58,10 +58,15 @@ async function scrapeWebsite(url) {
   }
 }
 
+function getRandomDelay(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
 (async () => {
   for (const website of websites) {
     await scrapeWebsite(website);
-    await delay(700); // Add a delay of 0.7 seconds between each request
+    const randomDelay = getRandomDelay(500, 1000); //Change numbers to the ammount of time in ms for random deley
+    await delay(randomDelay);
   }
 
   fs.writeFileSync("returned.json", JSON.stringify(results, null, 2));
