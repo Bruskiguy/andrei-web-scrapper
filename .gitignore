@@ -1,0 +1,5 @@
+# Ignore environment variables file
+.env
+
+# Ignore any other sensitive files
+config/secrets.json

@@ -1,73 +1,36 @@
 const axios = require("axios");
-const cheerio = require("cheerio");
-const fs = require("fs");
+require("dotenv").config();
 
-const websites = [
-  "https://sematext.com",
-  // Add more websites to this array
-];
+const apiKey = process.env.GOOGLE_API_KEY;
+const cx = process.env.cx;
 
-const userAgents = [
-  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36",
-  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/602.3.12 (KHTML, like Gecko) Version/10.0.3 Safari/602.3.12",
-  "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.111 Safari/537.36",
-  "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.157 Safari/537.36",
-];
-
-const results = [];
-
-function delay(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-async function scrapeWebsite(url) {
-  const randomUserAgent =
-    userAgents[Math.floor(Math.random() * userAgents.length)];
-  const headers = {
-    "User-Agent": randomUserAgent,
-  };
+// Get the URL for a company from Google Custom Search JSON API
+async function getCompanyURL(company) {
+  const query = encodeURIComponent(company);
+  const searchUrl = `https://www.googleapis.com/customsearch/v1?q=${query}&key=${apiKey}&cx=${cx}`;
 
   try {
-    const { data } = await axios.get(url, { headers });
-    const $ = cheerio.load(data);
-
-    let foundYouTubeChannel = false;
-    let youtubeChannel = "";
-
-    $("a").each((i, link) => {
-      const href = $(link).attr("href");
-      if (href && href.includes("youtube.com")) {
-        youtubeChannel = href;
-        foundYouTubeChannel = true;
-      }
-    });
-
-    results.push({
-      website: url,
-      foundYouTubeChannel,
-      youtubeChannel,
-    });
-
-    if (foundYouTubeChannel) {
-      console.log(`YouTube Channel found on ${url}: ${youtubeChannel}`);
-    } else {
-      console.log(`No YouTube Channel found on ${url}`);
-    }
+    const response = await axios.get(searchUrl);
+    const firstResult = response.data.items[0];
+    return firstResult ? firstResult.link : null;
   } catch (error) {
-    console.error(`Error scraping ${url}:`, error.message);
+    console.error("Error fetching search results:", error.message);
+    return null;
   }
 }
 
-function getRandomDelay(min, max) {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
+// Main execution function
 (async () => {
-  for (const website of websites) {
-    await scrapeWebsite(website);
-    const randomDelay = getRandomDelay(500, 1000); //Change numbers to the ammount of time in ms for random deley
-    await delay(randomDelay);
+  const companies = ["sematext", "apple", "microsoft", "IBM", "tesla"];
+  const companyURLs = await Promise.all(companies.map(getCompanyURL));
+
+  // Filter out null or invalid URLs
+  const validURLs = companyURLs.filter((url) => url !== null);
+  console.log("Valid Company URLs:", validURLs);
+
+  if (validURLs.length === 0) {
+    console.log("No valid URLs found. Check the Google search extraction.");
   }
 
-  fs.writeFileSync("returned.json", JSON.stringify(results, null, 2));
+  // Further processing can be done here
 })();
