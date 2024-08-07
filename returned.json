@@ -1,1 +1,17 @@
-[]
+[
+  {
+    "name": "sematext",
+    "businessSiteURL": "https://sematext.com/",
+    "youtubeChannel": "https://www.youtube.com/c/SematextGroup"
+  },
+  {
+    "name": "datadog",
+    "businessSiteURL": "https://www.datadoghq.com/",
+    "youtubeChannel": "https://www.youtube.com/user/DatadogHQ"
+  },
+  {
+    "name": "canva",
+    "businessSiteURL": "https://www.canva.com/",
+    "youtubeChannel": null
+  }
+]
